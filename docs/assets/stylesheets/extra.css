@@ -1,0 +1,70 @@
+/* =========================================================
+   Extra styles for cshieldsce.github.io portfolio
+   ========================================================= */
+
+/* Hero section on the home page */
+.hero-section {
+  background: linear-gradient(135deg, var(--md-primary-fg-color--light) 0%, var(--md-primary-fg-color) 100%);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  margin: 1.5rem 0 2rem;
+  color: var(--md-primary-bg-color);
+}
+
+.hero-section p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+}
+
+/* Make primary buttons pop in hero */
+.hero-section .md-button--primary {
+  background-color: var(--md-primary-bg-color);
+  color: var(--md-primary-fg-color);
+  border-color: var(--md-primary-bg-color);
+}
+
+.hero-section .md-button--primary:hover {
+  background-color: transparent;
+  color: var(--md-primary-bg-color);
+}
+
+.hero-section .md-button:not(.md-button--primary) {
+  border-color: var(--md-primary-bg-color);
+  color: var(--md-primary-bg-color);
+}
+
+/* Cards grid — slightly more padding and a subtle shadow */
+.grid.cards > ul > li,
+.grid.cards > ol > li {
+  border-radius: 10px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.grid.cards > ul > li:hover,
+.grid.cards > ol > li:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* About page grid */
+.about-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+/* Slightly wider content area */
+.md-content {
+  max-width: 900px;
+}
+
+/* Larger heading on home */
+.md-content h1:first-child {
+  font-size: 2.4rem;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
