@@ -8,14 +8,14 @@ featured: 6
 tags: [PCB, KiCad, Arduino, DAC, firmware]
 year: 2026
 hero:
-  src: ../../assets/projects/dsp-shield-dac/shield_pcb_top_render.png
-  alt: KiCad render of a green Arduino shield with a grid of resistors for the DAC, two buttons, three trim pots, two audio jacks, an op-amp socket and headers for an IMU and a display
+  src: ../../assets/projects/dsp-shield-dac/shield_3d_render.png
+  alt: KiCad 3D render of the shield with a blue IMU module, an OLED, blue trim pots, a grid of resistors, two buttons and an op-amp socket
 ---
 
 import Figure from '../../components/Figure.astro';
 import Video from '../../components/Video.astro';
 import img_shield_block_diagram from '../../assets/projects/dsp-shield-dac/shield_block_diagram.png';
-import img_shield_3d_render from '../../assets/projects/dsp-shield-dac/shield_3d_render.png';
+import img_shield_pcb_top_render from '../../assets/projects/dsp-shield-dac/shield_pcb_top_render.png';
 import img_dac_prototype_breadboard from '../../assets/projects/dsp-shield-dac/dac_prototype_breadboard.jpg';
 import img_dac_scope_staircase from '../../assets/projects/dsp-shield-dac/dac_scope_staircase.jpg';
 
@@ -25,7 +25,7 @@ It plugs on top of an Arduino Uno and gives it a small signal-processing playgro
 
 <div class="fig-row">
   <Figure src={img_shield_block_diagram} alt={"Block diagram with an Arduino Uno in the middle connected to a UART, an IMU, a screen, two pots, analog inputs, two buttons and a 10-bit DAC"} caption={"What talks to what"} />
-  <Figure src={img_shield_3d_render} alt={"KiCad 3D render of the shield with a blue IMU module, an OLED, blue trim pots and an op-amp socket populated"} caption={"The same board with parts on it"} />
+  <Figure src={img_shield_pcb_top_render} alt="KiCad render of the bare board layout with a grid of resistor pads, two buttons, three trim pot footprints, two audio jacks, an op-amp socket and headers for an IMU and a display" caption="The layout in KiCad" />
 </div>
 
 ## The DAC
