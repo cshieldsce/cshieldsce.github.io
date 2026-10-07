@@ -7,19 +7,24 @@ statusNote: Hardened through the Tiny Tapeout IHP CMOS5L flow at 6x4 tiles with 
 specs: 16-bit core, 18 mnemonics, five protocols
 tags: [ASIC, FPGA, Verilog, cocotb, protocols]
 year: 2026
-featured: 1
+featured: 2
 updated: 2026-09-30
 repo: https://github.com/cshieldsce/smallcore
 hero:
-  src: ../../assets/projects/smallcore/architecture.png
-  alt: Block diagram of smallcore.v with host.v and rom.v feeding top.v, which holds the core and its TX and RX FIFOs, and the core driving 24 pads
+  src: ../../assets/projects/smallcore/layout.jpg
+  alt: The final chip layout rendered from the GDS, with vertical power stripes, dense magenta and red routing in the middle and blue fill around the edges
 ---
+
+import Figure from '../../components/Figure.astro';
+import img_architecture from '../../assets/projects/smallcore/architecture.png';
 
 ## The chip
 
 A host writes bytes into a TX FIFO, picks one of the programs in a ROM, and the core runs that program on a handful of pins: UART, SPI, I2C, SWD or CAN. The core has 16-bit instructions with a per-instruction delay, four output pins that are push-pull or open-drain, four input pins, output and input shift registers, and a 16-bit accumulator with optional LFSR feedback. That is eighteen mnemonics in eight opcodes.
 
 The RTL is Verilog-2001. A Python model of the core is the golden reference, and cocotb benches under Verilator run the RTL in lockstep with it.
+
+<Figure src={img_architecture} alt="Block diagram of smallcore.v with host.v and rom.v feeding top.v, which holds the core and its TX and RX FIFOs, and the core driving 24 pads" caption="What's inside the chip" />
 
 ## How I worked on it
 
@@ -43,4 +48,4 @@ All numbers are from the Tiny Tapeout IHP CMOS5L flow at 6x4 tiles, post-route, 
 | Protocol engine v2 | 1894 | 2403 | 3.52% | +7.20 ns |
 | With a writable 256 by 16 program RAM | 23330 | 31816 | 55.37% | +1.10 ns |
 
-The v2 run still has 26 max-slew violations at the slow corner, on three nets of the ROM's address decode. The physical results article has every milestone and how each number is measured.
+The picture at the top of this page is the GDS from that last run, drawn in KLayout with the IHP layer colors. The v2 run still has 26 max-slew violations at the slow corner, on three nets of the ROM's address decode. The physical results article has every milestone and how each number is measured.

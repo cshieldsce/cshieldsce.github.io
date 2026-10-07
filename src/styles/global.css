@@ -69,7 +69,8 @@ code, pre, .specs { font-family: var(--mono); }
 
 .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); padding: 0; list-style: none; }
 .feature-grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
-@media (min-width: 800px) { .feature-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 640px) { .feature-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 980px) { .feature-grid { grid-template-columns: repeat(3, 1fr); } }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; transition: border-color 0.15s; }
 .card:hover { border-color: var(--accent); }
 .card[hidden], li[hidden] { display: none; }

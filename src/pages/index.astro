@@ -6,7 +6,7 @@ import { featured, commonTags, gridOrder } from '../lib/projects';
 
 const projects = await getCollection('projects');
 const top = featured(projects);
-const grid = gridOrder(projects.filter((p) => p.data.featured === undefined));
+const grid = gridOrder(projects);
 const tags = commonTags(projects);
 ---
 <BaseLayout title="Charlie Shields" description="Hardware, FPGA, ASIC and embedded projects by Charlie Shields.">
@@ -23,7 +23,7 @@ const tags = commonTags(projects);
   </section>
 
   <section id="projects" aria-labelledby="all-h">
-    <h2 id="all-h">More projects</h2>
+    <h2 id="all-h">All projects</h2>
     <div class="filters" data-filters hidden>
       <button type="button" data-tag-filter="" aria-pressed="true">All</button>
       {tags.map((t) => <button type="button" data-tag-filter={t} aria-pressed="false">{t}</button>)}
