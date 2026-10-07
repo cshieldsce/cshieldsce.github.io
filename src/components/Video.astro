@@ -1,0 +1,31 @@
+---
+interface Props {
+  video:
+    | { kind: 'file'; src: string; poster?: string; caption?: string }
+    | { kind: 'youtube'; id: string; caption?: string };
+}
+const { video } = Astro.props;
+---
+<figure>
+  <div class="video-wrap">
+    {video.kind === 'file' ? (
+      <video controls preload="metadata" playsinline poster={video.poster} src={video.src}>Your browser can't play this video.</video>
+    ) : (
+      <button type="button" data-yt={video.id}>Play video</button>
+    )}
+  </div>
+  {video.caption && <figcaption>{video.caption}</figcaption>}
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('button[data-yt]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const f = document.createElement('iframe');
+      f.src = `https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1`;
+      f.allow = 'autoplay; encrypted-media; picture-in-picture';
+      f.allowFullscreen = true;
+      f.title = 'Project video';
+      b.replaceWith(f);
+    }),
+  );
+</script>

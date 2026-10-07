@@ -1,0 +1,49 @@
+---
+title: Arduino DSP shield with a 10-bit R-2R DAC
+summary: "A two-layer Arduino Uno shield with an IMU, an OLED, buttons, pots, audio jacks and a 10-bit R-2R DAC, routed in KiCad from an instructor's template, plus a 5-bit breadboard DAC I measured on a scope."
+status: finished
+statusNote: "The board layout started from an instructor's template. I added the circuit and the routing. I never measured the 10-bit DAC on the shield, only the 5-bit one on a breadboard."
+specs: "2 layers, 46 parts, 10-bit R-2R DAC"
+tags: [PCB, KiCad, Arduino, DAC, firmware]
+year: 2026
+hero:
+  src: ../../assets/projects/dsp-shield-dac/shield_pcb_top_render.png
+  alt: KiCad render of a green Arduino shield with a grid of resistors for the DAC, two buttons, three trim pots, two audio jacks, an op-amp socket and headers for an IMU and a display
+---
+
+import Figure from '../../components/Figure.astro';
+import Video from '../../components/Video.astro';
+import img_shield_block_diagram from '../../assets/projects/dsp-shield-dac/shield_block_diagram.png';
+import img_shield_3d_render from '../../assets/projects/dsp-shield-dac/shield_3d_render.png';
+import img_dac_prototype_breadboard from '../../assets/projects/dsp-shield-dac/dac_prototype_breadboard.jpg';
+import img_dac_scope_staircase from '../../assets/projects/dsp-shield-dac/dac_scope_staircase.jpg';
+
+## The shield
+
+It plugs on top of an Arduino Uno and gives it a small signal-processing playground: an MPU6050 IMU and a 0.96 inch OLED on I2C, two buttons, three 100k trim pots, audio in and audio out, and a 10-bit R-2R DAC on pins D4 to D13. The IMU and the display are off-board modules on headers. The DAC feeds an MCP6002 op-amp stage with an offset pot, and the ladder is built from 10k and 20k resistors.
+
+<div class="fig-row">
+  <Figure src={img_shield_block_diagram} alt={"Block diagram with an Arduino Uno in the middle connected to a UART, an IMU, a screen, two pots, analog inputs, two buttons and a 10-bit DAC"} caption={"What talks to what"} />
+  <Figure src={img_shield_3d_render} alt={"KiCad 3D render of the shield with a blue IMU module, an OLED, blue trim pots and an op-amp socket populated"} caption={"The same board with parts on it"} />
+</div>
+
+## The DAC
+
+I built a 5-bit version of the ladder on a breadboard first. The Arduino counts 0 to 31 on D4 to D8 every 10 ms, and a Falstad simulation of the same circuit reads 4.167 V at the test point. On the scope the output is a set of separate levels, but at 200 ms per division it's not a clean staircase, and I never did a proper sweep.
+
+<div class="fig-row">
+  <Figure src={img_dac_prototype_breadboard} alt={"Breadboard with an Arduino Uno driving a resistor ladder, an op-amp and a potentiometer"} caption={"The 5-bit DAC prototype"} />
+  <Figure src={img_dac_scope_staircase} alt={"Oscilloscope screen showing a series of separate flat voltage levels at different heights"} caption={"Its output at 200 ms per division"} />
+</div>
+
+## The firmware demos
+
+- **Fan controller:** there's no real fan, and a pot stands in for temperature. Timer1 samples the ADC every 50 ms and averages 10 samples, so the reading updates about twice a second. Timer2 makes about 244 Hz PWM on pin 11. The "temperature" is a pot mapped from 0 to 50 C. Button 1 toggles the fan and button 2 cycles the sensitivity between low, medium and high.
+- **Solar charger:** reads two analog inputs against a 2.5 V threshold and shows SOLAR or BATTERY on the OLED.
+- **HAL drivers:** short test sketches for the ADC, PWM, HC-SR04, MPU6050 and SSD1306. They're sketches, not a library.
+
+<Video video={{"kind": "file", "src": "/video/dsp-shield-fan-controller.mp4", "caption": "The fan controller demo on the shield. The temperature is a pot, and the PWM output drives a pin, not a real fan."}} />
+
+## What was mine
+
+The layout began as an instructor's template: the Arduino headers, the outline, the mounting holes and the IMU connector, with no routing. The final board has 46 footprints, 196 track segments and a ground zone. So I added the resistors, capacitors, op-amp socket, buttons, pots, audio jacks and headers, did all the routing, and wrote the silkscreen labels. The schematic started from the template's too.

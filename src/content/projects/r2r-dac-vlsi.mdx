@@ -1,0 +1,56 @@
+---
+title: Five-bit R-2R DAC in VLSI
+summary: A 5-bit R-2R DAC drawn as a chip layout in Electric VLSI, with the netlist pulled back out of the layout and simulated in LTspice against the ideal ladder across all 32 codes.
+status: simulated
+statusNote: I never fabricated it, and the full die with the pad frame hasn't been through DRC or LVS, so this is layout plus simulation.
+specs: 16 n-well resistors, 156.25 mV per step
+tags: [VLSI, layout, analog, LTspice, Electric]
+year: 2026
+hero:
+  src: ../../assets/projects/r2r-dac-vlsi/ic_layout_crop.png
+  alt: Chip layout in Electric VLSI with a small resistor ladder in the middle of a square frame of eight bonding pads
+---
+
+import Figure from '../../components/Figure.astro';
+import img_ltspice_circuit from '../../assets/projects/r2r-dac-vlsi/ltspice_circuit.png';
+import img_dac_layout from '../../assets/projects/r2r-dac-vlsi/dac_layout.png';
+import img_dac_layout_3d from '../../assets/projects/r2r-dac-vlsi/dac_layout_3d.png';
+import img_transfer_curve from '../../assets/projects/r2r-dac-vlsi/transfer_curve.png';
+import img_delay_bench_wave from '../../assets/projects/r2r-dac-vlsi/delay_bench_wave.png';
+
+## The ladder
+
+It's a 5-bit voltage-mode R-2R ladder with no op-amp, run from 5 V. One step is 156.25 mV, so the top code (11111) gives 4.84375 V. There are 16 resistors, all 10k, because each 2R is just two 10k resistors in series. In the layout they're n-well resistors.
+
+Looking back into the output, the resistance is R (10k) for every code, and the open-circuit voltage is 5 times the code over 32.
+
+<Figure src={img_ltspice_circuit} alt={"LTspice schematic of the R-2R ladder built from sixteen 10k resistors"} caption={"The schematic I compared against"} />
+
+## The layout
+
+I drew one resistor cell, an n-well strip 164 units long and 14 wide in Electric's units, sized from R = Rsheet x L / W after checking the n-well and contact rules. Three of them make a divider, and the DAC is five dividers plus one more resistor, with pins for b0 to b4, vout and ground. I worked in Electric on the MOSIS technology and checked everything in LTspice.
+
+<div class="fig-row">
+  <Figure src={img_dac_layout} alt={"Electric layout of the DAC cell with resistor strips joined by metal straps and pins b0 to b4 and vout"} caption={"The DAC cell"} />
+  <Figure src={img_dac_layout_3d} alt={"Electric 3D view of the resistor strips and their metal connections"} caption={"The same cell in 3D"} />
+</div>
+
+## Does the layout match the schematic
+
+I pulled a netlist out of the layout and ran the same sweep three ways: the ideal ladder, the LTspice schematic and the extracted layout. All 32 codes agree to six decimals. Code 31 is 4.843750 V in all three.
+
+That tells me the layout is wired like the schematic. It doesn't tell me the resistors would be accurate in silicon, because the extracted netlist still uses ideal 10k resistors with no process variation.
+
+<Figure src={img_transfer_curve} alt={"Plot of output voltage against input code for all 32 codes, with the ideal line, the schematic and the extracted layout sitting on top of each other, and a lower line for a 10k load"} caption={"Ideal, schematic and extracted layout agree on all 32 codes"} />
+
+## Loading and speed
+
+The output impedance is 10k, so it wants a load much bigger than that. A 10k load halves the output: code 31 drops to 2.421875 V.
+
+Into 10 pF, with a 0 to 2 V step on the top bit, the simulated 50% delay is 69.52 ns. By hand, tau = RC = 100 ns, and 0.7 RC is 70 ns.
+
+<Figure src={img_delay_bench_wave} alt={"LTspice waveform of the output rising to its final value after an input step at 1 microsecond"} caption={"Step response into 10 pF"} />
+
+## The pad frame
+
+The second lab wraps the DAC in a frame of 8 bonding pads, two per side, 1600 by 1600 units. The DAC's seven pins go to seven pads and the spare pad (pin 3) is left unconnected.

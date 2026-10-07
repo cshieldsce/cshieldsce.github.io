@@ -1,0 +1,58 @@
+---
+title: DemoSat sensor shield
+summary: A two-layer Arduino Uno shield for a weather balloon payload that logs acceleration, pressure, temperature and humidity to a microSD card, redesigned around parts you can still buy.
+status: designed
+statusNote: Layout and gerbers are finished. I have no photo of a built board and no flight data, so I am not claiming either.
+specs: Two layers, I2C sensors, microSD logging
+tags: [PCB, KiCad, sensors, I2C, embedded]
+year: 2026
+featured: 3
+hero:
+  src: ../../assets/projects/demosat-shield/3d-front.png
+  alt: KiCad 3D render of a green shield board with two sensor breakouts, four LEDs with resistors, a red microSD logger and a battery connector
+---
+
+import Figure from '../../components/Figure.astro';
+import img_schematic from '../../assets/projects/demosat-shield/schematic.png';
+import img_layout_routing from '../../assets/projects/demosat-shield/layout-routing.png';
+
+## The kit
+
+The Colorado Space Grant Consortium publishes a workshop design for a weather balloon payload: an Arduino Uno that reads a few sensors, writes them to a microSD card and blinks four status LEDs. This is my redesign of that shield as a KiCad board. The kit itself is theirs; the schematic capture, the layout and the analysis below are mine.
+
+## Why redesign it
+
+When I evaluated the kit, three of its sensors had become a problem: the humidity sensor was retired, the pressure sensor was special order at $35 or more, and the accelerometer was $15 to $22 as a breakout or about $50 as a bare IC. The original also used all six analog pins, so only two of the three accelerometer axes were wired up.
+
+I swapped them for two I2C parts, which frees the analog pins and puts everything on two wires:
+
+| Part | Measures | Interface |
+|---|---|---|
+| Adafruit MS8607 breakout | Pressure, humidity, temperature | I2C |
+| SparkFun LIS3DH breakout | Three-axis acceleration | I2C |
+| TMP36 | Internal temperature | Analog, A0 |
+| SparkFun OpenLog | Writes a log file to microSD | UART, D1 |
+| Four LEDs with 470 ohm resistors | Status | D5, D6, D7, D9 |
+
+A 9 V battery feeds the Uno through a power switch, and an LD1117V33 provides the 3.3 V rail for the sensors.
+
+<Figure src={img_schematic} alt={"KiCad schematic split into blocks for the logger, LEDs, battery circuit, sensors and the Arduino"} caption={"Schematic"} />
+
+## The original kit against my redesign
+
+These are my estimates from datasheet figures, not measurements.
+
+| | Original kit | My redesign |
+|---|---|---|
+| Sensor and logger cost | About $70 or more, with parts you cannot get | About $40 |
+| Weight | About 138 to 163 g | About 112 to 127 g |
+| Battery life | About 3 hours | About 1.5 hours |
+
+The battery life got worse, and the reason is the regulator. Dropping 9 V to 3.3 V with a linear part burns the difference as heat; my estimate is about 570 mW of loss. A buck converter would bring that to about 50 mW and push battery life to 4 or 5 hours. I would make that change on a second revision.
+
+## Layout
+
+Two copper layers, four mounting holes, the Uno header pins passed through, and custom footprint libraries for the breakouts and the logger. The COSGC, CU and DU logos are on the silkscreen. The gerbers are exported.
+
+
+<Figure src={img_layout_routing} alt={"Routed PCB layout with the Arduino header pins along the edges and traces to the sensor headers"} caption={"Routed layout"} />

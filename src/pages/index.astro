@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { featured, commonTags, gridOrder } from '../lib/projects';
+
+const projects = await getCollection('projects');
+const top = featured(projects);
+const grid = gridOrder(projects.filter((p) => p.data.featured === undefined));
+const tags = commonTags(projects);
+---
+<BaseLayout title="Charlie Shields" description="Hardware, FPGA, ASIC and embedded projects by Charlie Shields.">
+  <section class="intro">
+    <h1>Charlie Shields</h1>
+    <p>I build digital and analog hardware: CPUs, small ASIC-flow designs, PCBs and the firmware that runs on them. Here's some of it.</p>
+  </section>
+
+  <section aria-labelledby="featured-h">
+    <h2 id="featured-h">Featured</h2>
+    <div class="feature-grid">
+      {top.map((p) => <ProjectCard id={p.id} data={p.data} large />)}
+    </div>
+  </section>
+
+  <section id="projects" aria-labelledby="all-h">
+    <h2 id="all-h">More projects</h2>
+    <div class="filters" data-filters hidden>
+      <button type="button" data-tag-filter="" aria-pressed="true">All</button>
+      {tags.map((t) => <button type="button" data-tag-filter={t} aria-pressed="false">{t}</button>)}
+    </div>
+    <ul class="grid">
+      {grid.map((p) => <li><ProjectCard id={p.id} data={p.data} /></li>)}
+    </ul>
+  </section>
+</BaseLayout>
+
+<script>
+  import { matchesTag, parseTagHash, hashAfterFilter } from '../lib/projects';
+
+  const bar = document.querySelector<HTMLElement>('[data-filters]')!;
+  const buttons = [...bar.querySelectorAll<HTMLButtonElement>('[data-tag-filter]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-card]')];
+  const known = buttons.map((b) => b.dataset.tagFilter!).filter(Boolean);
+
+  function apply(tag: string | null) {
+    cards.forEach((c) => {
+      (c.closest('li') ?? c).hidden = !matchesTag(JSON.parse(c.dataset.tags!), tag);
+    });
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.tagFilter || null) === tag)));
+    const next = hashAfterFilter(location.hash, tag);
+    if (next !== null) history.replaceState(null, '', next || location.pathname + location.search);
+  }
+
+  bar.hidden = false;
+  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.tagFilter || null)));
+  apply(parseTagHash(location.hash, known));
+  window.addEventListener('hashchange', () => apply(parseTagHash(location.hash, known)));
+</script>

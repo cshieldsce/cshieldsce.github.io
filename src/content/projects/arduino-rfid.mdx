@@ -1,0 +1,40 @@
+---
+title: Arduino RFID access control
+summary: "A card reader that lights a green LED for the right card and sounds a buzzer for the wrong one, built on an Arduino Uno with an RC522 module, plus a few smaller sensor labs."
+status: finished
+specs: "Uno, RC522 over SPI, 4-byte card match"
+tags: [Arduino, RFID, SPI, embedded, C++]
+year: 2024
+hero:
+  src: ../../assets/projects/arduino-rfid/rfid-breadboard.jpg
+  alt: An Arduino Uno wired to an RC522 RFID module and a breadboard with a green LED, a red LED and a buzzer
+---
+
+import Figure from '../../components/Figure.astro';
+import img_rfid_wiring_sketch from '../../assets/projects/arduino-rfid/rfid-wiring-sketch.jpg';
+import img_rfid_green_led_scan from '../../assets/projects/arduino-rfid/rfid-green-led-scan.jpg';
+import img_rfid_serial_access from '../../assets/projects/arduino-rfid/rfid-serial-access.jpg';
+
+## The build
+
+An Elegoo Uno R3, an RC522 RFID module on SPI, a green LED, a red LED and a buzzer. The pins are reset on 9, chip select on 10, green on 5, red on 4 and the buzzer on 6, and the MFRC522 library does the talking.
+
+<Figure src={img_rfid_wiring_sketch} alt={"Pencil wiring sketch of the Arduino, the RFID module, a buzzer, two resistors and two LEDs"} caption={"My wiring sketch"} />
+
+The first program just prints card UIDs over serial at 9600 baud. That's the library's example. The second one compares the card's 4-byte UID with one stored in the code, byte by byte. A match prints "Access Granted" and turns the green LED on for 2 seconds. A mismatch prints "Access Denied" and turns the red LED and the buzzer on for 1 second, then halts the card. The sketch is 5316 bytes, 16% of the flash. It isn't secure: matching a 4-byte UID is easy to clone, and the allowed UID sits in the sketch.
+
+The serial monitor below shows what a run looks like: a few denied scans, then four granted ones with the right card, then one more denied.
+
+<div class="fig-row">
+  <Figure src={img_rfid_green_led_scan} alt={"A hand holding a keyring up to the RFID reader while the green LED glows"} caption={"A good card, green LED"} />
+  <Figure src={img_rfid_serial_access} alt={"Serial monitor text showing several Access Denied lines, then four Access Granted lines, then one more Access Denied"} caption={"The serial monitor"} />
+</div>
+
+## The smaller labs
+
+These were lab-partner labs, and the code and wiring sketches are mine.
+
+- **Humidity and temperature:** a DHT11 on pin 7 and a 16x2 LCD, updating once a second.
+- **Distance:** an HC-SR04-style sensor, with distance in cm as the pulse time times 0.017015, printed twice a second.
+- **Clock:** a DS1307 real-time clock and an LCD. I used hand-written offsets in the code to fix the time display, which is a hack and can print wrong values.
+- **Gyro:** an MPU6050 on I2C, printing acceleration and rotation every 500 ms at 115200 baud. I don't trust that one: the sketch skipped `mpu.begin()` and the readout showed 132 m/s^2, more than the sensor's range.

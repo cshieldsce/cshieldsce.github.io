@@ -1,0 +1,56 @@
+---
+title: ECG amplifier and filter
+summary: An op-amp front end on a breadboard that pulls the heartbeat out of three skin electrodes, with an RC low-pass for mains noise and an LTspice model to match.
+status: finished
+specs: Gain of about 1000, three electrodes, RC low-pass
+tags: [analog, op-amp, LTspice, biosignal]
+year: 2025
+featured: 4
+hero:
+  src: ../../assets/projects/ecg-amplifier/hero.jpg
+  alt: A breadboard with two op-amp chips and resistors wired up, next to three ECG electrode pads and their leads
+---
+
+import Figure from '../../components/Figure.astro';
+import img_schematic from '../../assets/projects/ecg-amplifier/schematic.png';
+import img_unfiltered_no_movement from '../../assets/projects/ecg-amplifier/unfiltered_no_movement.png';
+import img_filtered_no_movement from '../../assets/projects/ecg-amplifier/filtered_no_movement.png';
+import img_unfiltered_movement from '../../assets/projects/ecg-amplifier/unfiltered_movement.png';
+import img_filtered_movement from '../../assets/projects/ecg-amplifier/filtered_movement.png';
+
+## The idea
+
+A heart puts out about 0.5 to 5 mV at the skin, buried in mains noise. I built an amplifier on a breadboard that takes three electrodes (two inputs and a ground on the ankle), amplifies the difference by about 1000, and filters it enough to see the beat on an oscilloscope.
+
+## The signal chain
+
+| Stage | Parts | Gain |
+|---|---|---|
+| Input amplifiers, one per lead | Two op-amps with 15 k feedback and a shared 1 k gain resistor | 1 + 2 x 15 k / 1 k = 31 |
+| Difference amplifier | 1 k in, 33 k feedback | 33 |
+| Low-pass | 3.3 k and 1 uF | Corner at about 48 Hz |
+
+<Figure src={img_schematic} alt={"Schematic with two input amplifiers sharing a gain resistor, a difference amplifier and an RC low-pass"} caption={"The signal chain"} />
+
+The first two stages are the classic instrumentation-amplifier arrangement: the shared gain resistor sets the differential gain and the difference stage rejects what both leads have in common. 31 times 33 is about 1023, which lands in the 1000 to 2000 range I worked out for the signal size.
+
+Before building it I weighed a high-pass, a low-pass and a T-notch for the 60 Hz noise, and the build uses a plain RC low-pass. The corner sits a little under 60 Hz, so a single pole only removes about 4 dB at the mains frequency.
+
+## The model
+
+The LTspice model has the same chain. It is driven by two recorded lead waveforms read from files, and a 1 mV 60 Hz sine injected at the filter input to see what the filter does to mains noise.
+
+## Did it work
+
+The captures are from a Keysight scope at 1 s per division. With the low-pass in place and me sitting still, the beat shows up as a repeating pattern across the whole window. Without the low-pass the same signal is mostly fuzz. Moving makes a large burst of noise in both captures, which is why you have to sit still. The 1000 is the designed gain, since I never measured it on the bench, and the filtered trace is still noisy. A 60 Hz notch or a higher-order filter would probably clean it up.
+
+
+<div class="fig-row">
+  <Figure src={img_unfiltered_no_movement} alt={"Oscilloscope capture of the output before the low-pass, with heavy noise"} caption={"Before the low-pass, sitting still"} />
+  <Figure src={img_filtered_no_movement} alt={"Oscilloscope capture of the filtered output with the heartbeat repeating across the screen"} caption={"Filtered, sitting still"} />
+</div>
+
+<div class="fig-row">
+  <Figure src={img_unfiltered_movement} alt={"Oscilloscope capture of the unfiltered output with a large burst of motion noise"} caption={"Before the low-pass, moving"} />
+  <Figure src={img_filtered_movement} alt={"Oscilloscope capture of the filtered output with a burst of motion noise in the middle"} caption={"Filtered, moving"} />
+</div>

@@ -1,0 +1,44 @@
+---
+import { getImage } from 'astro:assets';
+
+interface Props { src: ImageMetadata; alt: string; caption?: string }
+const { src, alt, caption } = Astro.props;
+const small = await getImage({ src, width: Math.min(src.width, 900) });
+const big = await getImage({ src, width: Math.min(src.width, 1800) });
+---
+<figure class="fig">
+  <button type="button" class="fig-open" data-fig-big={big.src} data-fig-alt={alt} aria-label={`Enlarge: ${alt}`}>
+    <img src={small.src} alt={alt} width={small.attributes.width} height={small.attributes.height} loading="lazy" decoding="async" />
+  </button>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  function viewer(): HTMLDialogElement {
+    let d = document.querySelector<HTMLDialogElement>('dialog[data-fig-dialog]');
+    if (!d) {
+      d = document.createElement('dialog');
+      d.setAttribute('data-lightbox', '');
+      d.setAttribute('data-fig-dialog', '');
+      d.setAttribute('aria-label', 'Image viewer');
+      d.innerHTML = '<img alt=""><button type="button" data-close>Close</button>';
+      const dialog = d;
+      dialog.addEventListener('click', (e) => {
+        const t = e.target as HTMLElement;
+        if (t === dialog || t.hasAttribute('data-close')) dialog.close();
+      });
+      document.body.appendChild(dialog);
+    }
+    return d;
+  }
+
+  document.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-fig-big]');
+    if (!b) return;
+    const d = viewer();
+    const img = d.querySelector('img')!;
+    img.src = b.dataset.figBig!;
+    img.alt = b.dataset.figAlt!;
+    d.showModal();
+  });
+</script>

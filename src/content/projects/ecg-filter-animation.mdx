@@ -1,0 +1,42 @@
+---
+title: ECG noise-filtering animation
+summary: A five-minute animated explainer, made in Manim, of why 60 Hz mains hum wrecks an ECG and what a brick-wall low-pass and a moving average each do about it.
+status: finished
+specs: Manim, six scenes, 5 minutes, synthetic ECG
+tags: [signal processing, Python, Manim, DSP, ECG]
+year: 2026
+hero:
+  src: ../../assets/projects/ecg-filter-animation/ecg-05-three-signals.png
+  alt: Three stacked traces of a heartbeat signal, noisy at the top, ringing in the middle and clean and smooth at the bottom
+---
+
+import Figure from '../../components/Figure.astro';
+import Video from '../../components/Video.astro';
+import img_ecg_02_fft_labeled from '../../assets/projects/ecg-filter-animation/ecg-02-fft-labeled.png';
+import img_ecg_03_brick_ringing from '../../assets/projects/ecg-filter-animation/ecg-03-brick-ringing.png';
+import img_ecg_04_moving_average_window from '../../assets/projects/ecg-filter-animation/ecg-04-moving-average-window.png';
+
+## The idea
+
+An ECG is a tiny signal sitting next to a very loud wall socket. I wrote an animated walkthrough in Manim of how that noise shows up and two ways to deal with it. The video is about 296 seconds and has six scenes: a cold open, where the noise comes from, finding it in the frequency domain, a naive filter, a moving average, and a side-by-side comparison.
+
+## The signal
+
+There's no real recording in this one. Each heartbeat is a sum of five Gaussians for the P, Q, R, S and T waves, at 72 beats per minute sampled at 500 Hz for 5 seconds. On top of that go two kinds of noise: 60 Hz mains hum at 0.25 amplitude and broadband noise at 0.08 from a seeded random generator.
+
+## The two filters
+
+The frequency-domain scene puts the trace over its FFT out to 120 Hz, with the heart at the low end, a spike at exactly 60 Hz, and a flat floor of everything else.
+
+<Figure src={img_ecg_02_fft_labeled} alt={"A noisy ECG above its frequency spectrum, with arrows to the heart signal at low frequency, a spike at 60 Hz and a flat noise floor"} caption={"The noise has a fingerprint in the spectrum"} />
+
+The naive filter is a brick wall: take the FFT, zero everything above 20 Hz and transform back. It kills the noise and it also rings around the sharp QRS spike, which I circled in red. I used 20 Hz because at 40 Hz the ringing is there mathematically but too small to see.
+
+<Figure src={img_ecg_03_brick_ringing} alt={"A single heartbeat after a brick-wall filter with ringing circled in red"} caption={"Ringing around the spike"} />
+
+The moving average is an 8-point window (`np.convolve` with a box). It has no ringing. I worked out that at a 500 Hz sample rate an 8-point average has its first null at 62.5 Hz, which takes the 60 Hz hum down to about 4% of its size. It also rounds off the QRS spike a little. The filter scenes drop the broadband noise on purpose so the ringing is the only thing to watch, so the final comparison is hum only.
+
+
+<Figure src={img_ecg_04_moving_average_window} alt={"A yellow window sliding across a noisy trace while the smoothed trace draws below it"} caption={"The moving average window"} />
+
+<Video video={{"kind": "file", "src": "/video/ecg-moving-average.mp4", "caption": "A 26 second clip from the video: the moving average window sweeping across the noisy trace."}} />

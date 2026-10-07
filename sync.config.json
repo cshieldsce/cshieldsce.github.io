@@ -1,0 +1,139 @@
+{
+  "series": [
+    {
+      "slug": "riscv-5i",
+      "repo": "cshieldsce/riscv-5i",
+      "ref": "main",
+      "liquid": {
+        "config": "docs/_config.yml",
+        "root": "docs",
+        "external": {
+          "/architecture/hazards/": "https://cshieldsce.github.io/riscv-5i/architecture/hazards/"
+        }
+      },
+      "docs": [
+        {
+          "path": "docs/architecture/index.md",
+          "slug": "architecture",
+          "permalink": "/architecture/",
+          "title": "Architecture",
+          "order": 10,
+          "summary": "The datapath, the five stages and the design tradeoffs behind them."
+        },
+        {
+          "path": "docs/architecture/stages.md",
+          "slug": "stages",
+          "permalink": "/architecture/stages/",
+          "title": "Pipeline stages",
+          "order": 20,
+          "summary": "What each stage does and why the logic looks the way it does, with the RTL."
+        },
+        {
+          "path": "docs/fpga/index.md",
+          "slug": "fpga",
+          "permalink": "/fpga/",
+          "title": "Running on the FPGA",
+          "order": 40,
+          "summary": "What synthesis cost, where timing closed and the demo running on a PYNQ-Z2."
+        },
+        {
+          "path": "docs/verification/index.md",
+          "slug": "verification",
+          "permalink": "/verification/",
+          "title": "Verification",
+          "order": 50,
+          "summary": "The RISCOF compliance matrix, the regression set and a branch bug found with a Vivado ILA."
+        },
+        {
+          "path": "test/cocotb/README.md",
+          "slug": "cocotb",
+          "title": "Unit-level cocotb testbenches",
+          "order": 55,
+          "summary": "Testbenches for the ALU and the hazard unit, with functional coverage."
+        },
+        {
+          "path": "asic/README.md",
+          "slug": "sky130",
+          "title": "Running the core through Sky130",
+          "order": 60,
+          "summary": "Taking the core through an open source RTL-to-GDSII flow, with timing closed at every corner at 27.8 MHz."
+        },
+        {
+          "path": "docs/setup/index.md",
+          "slug": "setup",
+          "permalink": "/setup/",
+          "title": "Setup",
+          "order": 70,
+          "summary": "Toolchain install, build and simulation steps."
+        }
+      ],
+      "assets": [
+        "docs/images/pipeline_complete.svg"
+      ]
+    },
+    {
+      "slug": "smallcore",
+      "repo": "cshieldsce/smallcore",
+      "ref": "main",
+      "docs": [
+        {
+          "path": "docs/repeat-candidates.md",
+          "slug": "repeat-candidates",
+          "title": "Choosing a repeat instruction",
+          "order": 10,
+          "summary": "Comparing ways to repeat a run of words; REPEAT count, label became opcode 111."
+        },
+        {
+          "path": "docs/can-candidates.md",
+          "slug": "can-candidates",
+          "title": "CAN candidates",
+          "order": 20,
+          "summary": "Comparing run-test instructions for CAN; SKIP_RUN and SKIP_NORUN were adopted and the others rejected."
+        },
+        {
+          "path": "docs/crc-baselines.md",
+          "slug": "crc-baselines",
+          "title": "CRC baselines",
+          "order": 30,
+          "summary": "Can the core as it is compute CAN's CRC-15? No: the state is eight bits wide and the computation needs fifteen."
+        },
+        {
+          "path": "docs/crc-candidates.md",
+          "slug": "crc-candidates",
+          "title": "CRC candidates",
+          "order": 40,
+          "summary": "Comparing state architectures against that width wall; the 16-bit accumulator was adopted."
+        },
+        {
+          "path": "docs/can-combined.md",
+          "slug": "can-combined",
+          "title": "CAN combined",
+          "order": 50,
+          "summary": "A whole Classical CAN frame fits in 256 words at 8 clocks a bit; arbitration needs the identifier in the program."
+        },
+        {
+          "path": "docs/can-stress.md",
+          "slug": "can-stress",
+          "title": "CAN stress test",
+          "order": 60,
+          "summary": "A whole CAN node's data path fits, one program per job; the node's judgement does not."
+        },
+        {
+          "path": "docs/ethernet-10baset.md",
+          "slug": "ethernet-10baset",
+          "title": "10BASE-T Ethernet",
+          "order": 70,
+          "summary": "An experiment on the frozen core: the transmitter works at 40 MHz with host-side encoding; fixed-timing receivers lose long frames."
+        },
+        {
+          "path": "docs/physical-results.md",
+          "slug": "physical-results",
+          "title": "Physical results",
+          "order": 80,
+          "summary": "Cells, area, utilization and timing from the Tiny Tapeout flow for every RTL milestone."
+        }
+      ],
+      "assets": []
+    }
+  ]
+}

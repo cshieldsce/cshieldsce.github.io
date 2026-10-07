@@ -1,0 +1,32 @@
+---
+title: DE10-Lite Verilog labs
+summary: Four lab sessions of Verilog on a DE10-Lite, from multiplexers and seven-segment decoders through adders, latches and counters, ending with a HELLO ticker running on the board.
+status: finished
+statusNote: I skipped the graduate-level parts, one counter and the last lab.
+specs: MAX 10 FPGA, Quartus 25.1, labs 1 to 4
+tags: [FPGA, Verilog, Quartus, digital logic]
+year: 2026
+hero:
+  src: ../../assets/projects/de10-lite-fpga-labs/lab2_part1_board.jpg
+  alt: A DE10-Lite board showing 42 on its seven-segment displays, sitting on a notebook page with a hand-drawn segment truth table
+---
+
+import Figure from '../../components/Figure.astro';
+import Video from '../../components/Video.astro';
+import img_lab1_hello_board_crop from '../../assets/projects/de10-lite-fpga-labs/lab1_hello_board_crop.jpg';
+
+## The board
+
+A Terasic DE10-Lite with a MAX 10 FPGA, using Quartus Prime 25.1 Lite. The lab manuals were written for an older board with 18 switches and 8 displays, so I rescaled each lab to this one's 10 switches and 6 displays.
+
+<Figure src={img_lab1_hello_board_crop} alt={"A DE10-Lite board with HELLO shown on its seven-segment displays"} caption={"Lab 1, HELLO on the displays"} />
+
+## What I built
+
+- **Lab 1:** an 8-bit 2-to-1 multiplexer, a 3-bit 5-to-1 multiplexer and a seven-segment decoder, then HELLO rotating across the displays with switches choosing the rotation. The whole thing compiles to 24 logic elements out of 49,760 and uses no registers.
+- **Lab 2:** a two-digit hex decoder where I minimized each segment from a Karnaugh map, binary to decimal with a comparator (`z = v3 & (v2 | v1)`), a 4-bit ripple-carry adder from four full adders, and BCD adders. The BCD adders take operands from 0 to 19 and show A, B and the sum on separate displays.
+- **Lab 3:** latches and flip-flops. A gated RS latch, a gated D latch, a master-slave D flip-flop, and a comparison of a behavioral latch against positive-edge and negative-edge flip-flops. The RS latch needs `/* synthesis keep */` or Quartus folds it into a single lookup table. Buttons are active low, so the clocks are `~KEY[n]`.
+- **Lab 4:** counters. An 8-bit counter from T flip-flops and a 16-bit behavioral counter, both running off a 1 Hz clock divided down from the 50 MHz board clock (the divider toggles every 25,000,000 cycles). The HELLO ticker is an 11-state machine and compiles to 83 logic elements and 31 registers.
+
+
+<Video video={{"kind": "file", "src": "/video/de10-lite-hello-ticker.mp4", "caption": "The HELLO ticker from lab 4, scrolling across the six displays."}} />

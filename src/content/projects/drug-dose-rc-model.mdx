@@ -1,0 +1,37 @@
+---
+title: Two-capacitor drug dose model
+summary: "A two-capacitor circuit that behaves like a drug dose spreading into the bloodstream and clearing out, solved by hand, simulated in LTspice and measured on a scope."
+status: finished
+specs: "C1 3.3 uF, C2 33 uF, overdamped response"
+tags: [analog, LTspice, oscilloscope, biosignal]
+year: 2025
+hero:
+  src: ../../assets/projects/drug-dose-rc-model/circuit.png
+  alt: Falstad schematic with a charged 3.3 uF capacitor, a switch, a 10k resistor, a 5.1k resistor to ground and a 33 uF capacitor
+---
+
+import Figure from '../../components/Figure.astro';
+import ltspice from '../../assets/projects/drug-dose-rc-model/ltspice-curve.png';
+import scope from '../../assets/projects/drug-dose-rc-model/scope-curve.png';
+
+## The model
+
+The circuit is an electrical stand-in for how a drug moves through the body. C1 is the dose, R1 is the resistance of getting from the injection into the blood, C2 is the volume of blood in the region, and R2 is the body clearing it out through the kidneys and the like. I charge C1 to 20 V and close the switch, the way a nurse pushes a syringe, and watch the voltage on C2. That voltage is how much of the drug is in the bloodstream.
+
+## Solving it
+
+I wrote the node equations at C2 and for the current out of C1, and they collapse into one second-order equation. The roots are real and different, about -33.85 and -5.30 per second, so the response is overdamped:
+
+```text
+V(t) = -2.12 e^(-33.85 t) + 2.12 e^(-5.30 t)
+```
+
+At t = 0 all 20 V sits across R1 and C2 is empty, so C2 starts rising at 60.6 V/s. It climbs, peaks, and then drains away over about a second. From that equation I get a peak of about 1.27 V, around 65 ms in.
+
+## Simulated and measured
+
+<Figure src={ltspice} alt="LTspice plot of a curve that rises quickly to a peak near 1.3 volts and then decays to zero over one second" caption="LTspice: a peak near 1.3 V, back to zero in a second" />
+
+<Figure src={scope} alt="Oscilloscope trace of a curve that steps up, peaks and then decays, with a peak-to-peak reading of 1.57 volts and a dashed cursor line sitting low" caption="On the bench: the scope reads 1.57 V peak to peak" />
+
+The simulation agrees with the math. The scope read 1.57 V peak to peak, higher than both, and I think the bottom cursor was set too low.

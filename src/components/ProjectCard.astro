@@ -1,0 +1,24 @@
+---
+import { Image } from 'astro:assets';
+import StatusBadge from './StatusBadge.astro';
+
+const { id, data, large = false } = Astro.props;
+---
+<article class:list={['card', { large }]} data-card data-tags={JSON.stringify(data.tags)}>
+  <a href={`/projects/${id}/`} aria-labelledby={`card-${large ? 'f' : 'g'}-${id}`}>
+    <Image
+      class="card-img"
+      src={data.hero.src}
+      alt={data.hero.alt}
+      widths={[400, 800]}
+      sizes="(min-width: 800px) 500px, 100vw"
+    />
+    <div class="card-body">
+      <StatusBadge status={data.status} />
+      <h3 id={`card-${large ? 'f' : 'g'}-${id}`}>{data.title}</h3>
+      {data.specs && <p class="specs">{data.specs}</p>}
+      <p>{data.summary}</p>
+      <ul class="tags">{data.tags.map((t: string) => <li>{t}</li>)}</ul>
+    </div>
+  </a>
+</article>
