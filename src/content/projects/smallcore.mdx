@@ -1,0 +1,46 @@
+---
+title: smallcore
+summary: A small programmable protocol engine in Verilog, in the style of a PIO block. It runs UART, SPI, I2C, SWD and CAN from tiny programs, and I have taken it through a real ASIC flow.
+kind: series
+status: hardened
+statusNote: Hardened through the Tiny Tapeout IHP CMOS5L flow at 6x4 tiles with zero DRC, antenna and LVS violations. I have not submitted it for fabrication, and this page does not claim a run on a board.
+specs: 16-bit core, 18 mnemonics, five protocols
+tags: [ASIC, FPGA, Verilog, cocotb, protocols]
+year: 2026
+featured: 1
+updated: 2026-09-30
+repo: https://github.com/cshieldsce/smallcore
+hero:
+  src: ../../assets/projects/smallcore/architecture.png
+  alt: Block diagram of smallcore.v with host.v and rom.v feeding top.v, which holds the core and its TX and RX FIFOs, and the core driving 24 pads
+---
+
+## The chip
+
+A host writes bytes into a TX FIFO, picks one of the programs in a ROM, and the core runs that program on a handful of pins: UART, SPI, I2C, SWD or CAN. The core has 16-bit instructions with a per-instruction delay, four output pins that are push-pull or open-drain, four input pins, output and input shift registers, and a 16-bit accumulator with optional LFSR feedback. That is eighteen mnemonics in eight opcodes.
+
+The RTL is Verilog-2001. A Python model of the core is the golden reference, and cocotb benches under Verilator run the RTL in lockstep with it.
+
+## How I worked on it
+
+Every question about the instruction set is an experiment. I write the candidate instructions, measure real programs against them, and record the outcome with a date, including the ones I rejected. The articles below are those records:
+
+- REPEAT became opcode 111 after comparing ways to repeat a run of words.
+- CAN needed a run test, and the same question came up on the transmit and receive sides, so `SKIP_RUN` and `SKIP_NORUN` were adopted.
+- The CRC baselines show the core as it was could not compute CAN's CRC-15, because the state was eight bits wide and the computation needs fifteen. That led to the accumulator.
+- With those in place, a whole Classical CAN data frame fits in 256 words at 8 clocks per bit. The CAN stress test article keeps the list of what still doesn't fit: an ACK that depends on the CRC, bit monitoring and resynchronization.
+
+## Verification
+
+The model has 2431 pytest tests, including a sweep of every 16-bit word. The RTL benches run each protocol program at the pins, with the bench acting as the far end of the wire, and several of them were shown to fail under a deliberate mutation before I kept them.
+
+## Physical results
+
+All numbers are from the Tiny Tapeout IHP CMOS5L flow at 6x4 tiles, post-route, at a 20 ns clock, worst of the nominal corners. Every hardened row so far has zero routing DRC, Magic DRC, antenna and LVS errors.
+
+| Milestone | Synthesized cells | Routed cells | Utilization | Setup slack |
+|---|---|---|---|---|
+| Protocol engine v2 | 1894 | 2403 | 3.52% | +7.20 ns |
+| With a writable 256 by 16 program RAM | 23330 | 31816 | 55.37% | +1.10 ns |
+
+The v2 run still has 26 max-slew violations at the slow corner, on three nets of the ROM's address decode. The physical results article has every milestone and how each number is measured.

@@ -1,0 +1,37 @@
+---
+title: PDM microphone driver for PSoC 6 on Zephyr
+summary: "A driver that gets the PDM microphones on Infineon's CY8CKIT-062S2-AI kit working under Zephyr, using the vendor's low-level library instead of ModusToolbox."
+status: finished
+specs: "1.5625 MHz mic clock, about 16 kHz PCM"
+tags: [firmware, Zephyr, RTOS, drivers, PSoC 6]
+year: 2026
+repo: https://github.com/cshieldsce/psoc6-pdm-zephyr
+hero:
+  src: ../../assets/projects/psoc6-pdm-zephyr/zephyr-logo.png
+  alt: The Zephyr logo, a blue and purple kite with the word Zephyr in white on a dark background
+---
+
+## The problem
+
+Zephyr 4.3 has no upstream PDM or DMIC driver for the PSoC 6 audio block, so I wrote one. It builds with plain `west`: no ModusToolbox, no proprietary IDE, no `cyhal`.
+
+The trick is that Zephyr already ships Infineon's lower-level library (the PDL) as a west module. I call `cy_pdm_pcm`, `cy_gpio` and `cy_sysclk` from it directly and add the PDL source file to the CMake build.
+
+## How it works
+
+The kit has two IM72D128V01XTMA1 microphones. The clock pin is P10.4 and the data pin is P10.5, both muxed to the PDM function (HSIOM 21), and the data pin needs a pull-down, not high-impedance.
+
+The clock chain is in the diagram below. The 100 MHz FLL feeds HFCLK1, which doesn't run unless you turn it on: Zephyr's devicetree leaves it off, so a board overlay enables it from the FLL. Three divide-by-4 stages take it down to a 1.5625 MHz mic clock, which is inside the microphone's 1.0 to 3.072 MHz range, and a sinc decimation filter turns the bit stream into about 16 kHz of 16-bit PCM. The audio block's clock gate also has to be enabled by hand.
+
+![Two rows of boxes. The top row is the clock chain from a 100 MHz FLL down to a 1.5625 MHz PDM clock. The bottom row is the data path from the PDM pins through a decimation filter to 16-bit PCM and 100 ms frames.](/img/psoc6-clock-chain.png)
+
+The code reads back the pin mux at boot and logs it, and it dumps a few raw FIFO words so you can tell a floating line from a live one. The demo loop takes 100 ms frames (1600 samples), logs the minimum, maximum, average and energy of each, flags a frame as TRIGGERED when the energy goes over a threshold, and toggles an LED.
+
+Build and flash:
+
+```bash
+west build -p always -b cy8ckit_062s2_ai/cy8c624abzi_s2d44 .
+west flash
+```
+
+It's about 400 lines in total and Apache-2.0 licensed. It's mono, since only the left microphone is read, and it polls the FIFO instead of using DMA, throwing the frame away if the FIFO overflows. It isn't a Zephyr DMIC-API driver: it has its own small init and read functions. The repo has no saved capture, so there are no plots here, but it does run on the board.

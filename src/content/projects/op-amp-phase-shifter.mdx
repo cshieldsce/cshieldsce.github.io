@@ -1,0 +1,52 @@
+---
+title: Op-amp phase shifter
+summary: "An op-amp circuit with a potentiometer that shifts the phase of a 500 Hz sine without changing its amplitude, worked out by hand, simulated in LTspice and measured on a scope at three pot settings."
+status: finished
+specs: "500 Hz, 100 nF, about -150 degrees at the top"
+tags: [analog, op-amp, LTspice, oscilloscope]
+year: 2025
+hero:
+  src: ../../assets/projects/op-amp-phase-shifter/breadboard.jpg
+  alt: Close view of a breadboard with an op-amp chip, a few resistors and a capacitor wired up, with scope probe clips on the right
+---
+
+import Figure from '../../components/Figure.astro';
+import circuit from '../../assets/projects/op-amp-phase-shifter/circuit.png';
+import sim100 from '../../assets/projects/op-amp-phase-shifter/sim-100ohm.png';
+import sim5k from '../../assets/projects/op-amp-phase-shifter/sim-5k.png';
+import sim10k from '../../assets/projects/op-amp-phase-shifter/sim-10k.png';
+import scope100 from '../../assets/projects/op-amp-phase-shifter/scope-100ohm.png';
+import scope5k from '../../assets/projects/op-amp-phase-shifter/scope-5k.png';
+import scope10k from '../../assets/projects/op-amp-phase-shifter/scope-10k.png';
+
+## The circuit
+
+It's one op-amp, two 10k resistors, a 100 nF capacitor and a pot. The pot and the capacitor form an RC network on the non-inverting input, and turning the pot slides the output's phase against the input. The amplitude doesn't change, only the timing.
+
+<Figure src={circuit} alt="Falstad schematic of an op-amp with two 10k resistors, a 5k and 5k potentiometer labeled Rp and a 100 nF capacitor to ground, driven by a 500 Hz source" caption="The circuit, drawn in Falstad" />
+
+I worked the transfer function out by hand. With the two resistors equal it simplifies to (1 - sCRp) / (1 + sCRp), which is an all-pass filter: gain of one at every frequency, with a phase that depends on Rp. At 500 Hz the capacitor's impedance is about -3.2k j ohms, which is what the pot fights against.
+
+## Calculated, simulated, measured
+
+I picked three pot values, worked out the phase shift for each, ran each in LTspice and then built it and measured on the scope.
+
+| Pot | Calculated | Simulated | Measured |
+|---|---|---|---|
+| 100 ohm | -3.6 deg | -1.97 deg | no reading |
+| 5k | -114.6 deg | -115.5 deg | -110.29 deg |
+| 10k | -145.0 deg | -145.0 deg | -149.85 deg |
+
+<div class="fig-row">
+  <Figure src={sim100} alt="LTspice plot of two nearly overlapping sine waves with a cursor measuring a tiny time difference" caption="100 ohm, simulated" />
+  <Figure src={sim5k} alt="LTspice plot of two sine waves with a noticeable shift between them and a cursor measuring the time difference" caption="5k, simulated" />
+  <Figure src={sim10k} alt="LTspice plot of two sine waves shifted by a large fraction of a cycle with a cursor measuring the time difference" caption="10k, simulated" />
+</div>
+
+At 100 ohms the shift is only about two degrees, so the traces sit on top of each other. The scope couldn't find an edge to measure between them and reports "No edges", so that row has no number. At 5k I measured -110.3 degrees against -115.5 simulated, and at 10k I measured -149.9 against -145.0. The scope read 502 Hz for the input.
+
+<div class="fig-row">
+  <Figure src={scope100} alt="Oscilloscope trace where the yellow and green sine waves overlap almost exactly, with the phase reading showing No edges" caption="100 ohm on the bench" />
+  <Figure src={scope5k} alt="Oscilloscope trace of two sine waves offset in time, with a phase reading of minus 110.29 degrees" caption="5k on the bench" />
+  <Figure src={scope10k} alt="Oscilloscope trace of two sine waves nearly opposite each other, with a phase reading of minus 149.85 degrees" caption="10k on the bench" />
+</div>

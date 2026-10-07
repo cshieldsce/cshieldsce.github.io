@@ -1,0 +1,49 @@
+---
+import { getImage } from 'astro:assets';
+
+interface Props { items: { src: ImageMetadata; alt: string; caption?: string }[] }
+const { items } = Astro.props;
+const prepared = await Promise.all(
+  items.map(async (i) => ({
+    ...i,
+    thumb: await getImage({ src: i.src, width: 480 }),
+    big: await getImage({ src: i.src, width: 1600 }),
+  })),
+);
+---
+{prepared.length > 0 && (
+  <section class="gallery" aria-label="Gallery">
+    <ul>
+      {prepared.map((i) => (
+        <li>
+          <button type="button" data-big={i.big.src} data-alt={i.alt} aria-label={`Enlarge: ${i.alt}`}>
+            <img src={i.thumb.src} alt={i.alt} width={i.thumb.attributes.width} height={i.thumb.attributes.height} loading="lazy" />
+          </button>
+          {i.caption && <p>{i.caption}</p>}
+        </li>
+      ))}
+    </ul>
+    <dialog data-lightbox aria-label="Image viewer">
+      <img alt="" />
+      <button type="button" data-close>Close</button>
+    </dialog>
+  </section>
+)}
+
+<script>
+  document.querySelectorAll<HTMLElement>('.gallery').forEach((g) => {
+    const dialog = g.querySelector('dialog')!;
+    const img = dialog.querySelector('img')!;
+    g.querySelectorAll<HTMLButtonElement>('[data-big]').forEach((b) =>
+      b.addEventListener('click', () => {
+        img.src = b.dataset.big!;
+        img.alt = b.dataset.alt!;
+        dialog.showModal();
+      }),
+    );
+    dialog.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t === dialog || t.hasAttribute('data-close')) dialog.close();
+    });
+  });
+</script>

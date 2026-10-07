@@ -1,0 +1,49 @@
+---
+title: CANtap
+summary: "CAN bus tooling: a desktop app, a scriptable CLI, and the firmware and board for an isolated CAN FD adapter, all on one Rust backend."
+status: in-progress
+statusNote: The repository is private for now. The Candor board is routed and every net connects, but a default KiCad design rule check still reports 6 errors, so I haven't ordered it.
+specs: STM32G474, three FDCAN, Rust core, Tauri app
+tags: [CAN, Rust, STM32, PCB, firmware]
+year: 2026
+hero:
+  src: ../../assets/projects/cantap/candor-top.png
+  alt: KiCad 3D render of a long two-layer board with an isolated CAN FD side on the left, a host side with an STM32 on the right, and a USB-C connector
+---
+
+import Figure from '../../components/Figure.astro';
+import img_trace_view from '../../assets/projects/cantap/trace-view.png';
+
+## The tool
+
+CANtap looks at a CAN bus. The desktop app is a Tauri 2 shell around a React and TypeScript front end, the CLI runs the same Rust backend headless, and the firmware and board are for an adapter I designed to go under it. It's MIT-licensed, though the repo isn't public yet. It's alpha, Linux is the primary target, and Windows builds and installs but has only been exercised through a VM.
+
+## The app
+
+- **Trace:** the live frame stream, either as a waterfall or one row per ID with byte-level change highlighting.
+- **Bench:** a Lua editor with completions for the scripting APIs, and a DBC editor with a drag-to-paint bit grid.
+- **Dashboard:** gauges, indicators and sparklines bound to decoded signals.
+- **Triggers and TX slots:** breakpoints that fire on an ID and payload mask or a signal threshold, and frames you can compose and schedule.
+
+There is also a virtual bus that needs no drivers and no root, so the app and the CLI both work on a laptop with no hardware.
+
+<Figure src={img_trace_view} alt={"Dark desktop app showing a table of CAN frames with timestamps, identifiers and data bytes, and an inspector panel on the right"} caption={"The trace view in an early v0.1.0 build"} />
+
+## The CLI
+
+`cantap` does capture, replay, decode against a DBC, diff and assertions. Output is readable on a terminal and JSONL when piped, so a CI check looks like this:
+
+```bash
+cantap capture can0 --duration 5 --output cap.jsonl
+cantap assert cap.jsonl --expr 'count(id=0x100) >= 500 and no_errors and bus_load < 60%'
+```
+
+## The hardware
+
+The firmware is for an STM32G474RE with three FDCAN peripherals, FreeRTOS and TinyUSB. It shows up as two USB interfaces: a standard gs_usb device that Linux handles natively, and a second one speaking a protocol I wrote, which carries hardware timestamps and all channels. The bench build is a Nucleo-G474RE with soldered transceivers.
+
+On a real bus, loopback passes on each adapter I tried: that bench build, a PCAN-USB and a CANable-style gs_usb dongle. The cross-bus tests, where two different adapters talk to each other, failed on my last run and that's still open. The firmware has only run on the Nucleo bench build, not on the Candor board.
+
+## The board
+
+Candor is a single-channel isolated CAN FD adapter: an STM32G474RE, a TI ISOW1044 isolated transceiver with its own DC-DC, a USB-C connector, an ESD part on the bus side and a USB ESD part on the host side. It is two layers with 63 footprints, 415 track segments and 97 vias. The first schematic is from April 2026. Since then I swapped the common-mode choke, dropped the reset button and added a solder jumper that enables the bus termination.

@@ -1,0 +1,50 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import Gallery from '../../components/Gallery.astro';
+import Video from '../../components/Video.astro';
+import { getSeriesArticles } from '../../lib/series';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((p) => ({ params: { slug: p.id }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+const articles = data.kind === 'series' ? await getSeriesArticles(project.id) : [];
+---
+<BaseLayout title={`${data.title} | Charlie Shields`} description={data.summary}>
+  <article class="prose">
+    <p><a href="/#projects">All projects</a></p>
+    <h1>{data.title}</h1>
+    <p><StatusBadge status={data.status} /> <span class="specs">{data.year}</span></p>
+    {data.statusNote && <p class="status-note">{data.statusNote}</p>}
+    <p>{data.summary}</p>
+    <Image class="hero" src={data.hero.src} alt={data.hero.alt} widths={[640, 1100]} sizes="(min-width: 800px) 720px, 100vw" />
+    <Content />
+    {data.kind === 'series' && (
+      <section aria-labelledby="articles-h">
+        <h2 id="articles-h">Articles</h2>
+        {articles.length === 0 ? (
+          <p>No articles yet.</p>
+        ) : (
+          <ol class="series-list">
+            {articles.map((a) => (
+              <li>
+                <a href={`/projects/${a.id}/`}>{a.data.title}</a>
+                <div class="muted">{a.data.summary}</div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    )}
+    {data.video && <Video video={data.video} />}
+    <Gallery items={data.gallery} />
+    {data.repo && <p><a href={data.repo}>Source on GitHub</a></p>}
+  </article>
+</BaseLayout>

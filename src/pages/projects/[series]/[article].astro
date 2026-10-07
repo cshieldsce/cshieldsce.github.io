@@ -1,0 +1,33 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getAllArticles, getSeriesArticles } from '../../../lib/series';
+
+export async function getStaticPaths() {
+  const all = await getAllArticles();
+  return all.map((entry) => {
+    const parts = entry.id.split('/');
+    if (parts.length !== 2) throw new Error(`Article id must be <series>/<article>, got "${entry.id}"`);
+    return { params: { series: parts[0], article: parts[1] }, props: { entry } };
+  });
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const series = (await getCollection('projects')).find((p) => p.id === entry.data.series);
+const siblings = await getSeriesArticles(entry.data.series);
+const i = siblings.findIndex((s) => s.id === entry.id);
+const prev = siblings[i - 1];
+const next = siblings[i + 1];
+---
+<BaseLayout title={`${entry.data.title} | Charlie Shields`} description={entry.data.summary}>
+  <article class="prose">
+    <p><a href={`/projects/${entry.data.series}/`}>{series?.data.title ?? entry.data.series}</a></p>
+    <h1>{entry.data.title}</h1>
+    <Content />
+    <nav class="series-nav" aria-label="Series">
+      {prev ? <a href={`/projects/${prev.id}/`}>&larr; {prev.data.title}</a> : <span />}
+      {next ? <a href={`/projects/${next.id}/`}>{next.data.title} &rarr;</a> : <span />}
+    </nav>
+  </article>
+</BaseLayout>

@@ -1,0 +1,50 @@
+---
+title: riscv-5i
+summary: A 5-stage pipelined RISC-V core in SystemVerilog, checked against the RISCOF compliance suite, running on a Zynq-7000 and taken through a Sky130 layout.
+kind: series
+status: finished
+specs: 482 of 482 RISCOF tests, 1972 LUTs at 10 MHz
+tags: [FPGA, SystemVerilog, CPU, verification, ASIC]
+year: 2026
+featured: 2
+updated: 2026-10-06
+repo: https://github.com/cshieldsce/riscv-5i
+hero:
+  src: ../../assets/projects/riscv-5i/sky130-layout.png
+  alt: Chip layout render of the core on Sky130, with routing on metal 2 through 5 and the power grid as long straight stripes
+---
+
+import Figure from '../../components/Figure.astro';
+import Video from '../../components/Video.astro';
+import img_timing_summary from '../../assets/projects/riscv-5i/timing-summary.png';
+import img_utilization from '../../assets/projects/riscv-5i/utilization.png';
+
+## The core
+
+The classic Patterson and Hennessy pipeline: fetch, decode, execute, memory, writeback, with full forwarding, load-use stalling and early resolution of JAL. It implements RV32I and passes all 482 RISCOF compliance tests against Spike.
+
+| Result | Value |
+|---|---|
+| Compliance | 482 of 482 RISCOF RV32I tests against Spike |
+| FPGA | Zynq-7000 on a PYNQ-Z2, 10 MHz, positive slack |
+| Resources | 1972 LUTs (3.7%) and 3326 flip-flops |
+| Sky130 layout | 0.247 mm^2, DRC and LVS clean, 27.8 MHz at every corner |
+
+I scoped it to RV32I and stopped there: no M extension, no CSRs (SYSTEM and FENCE decode as NOPs), no caches, no exceptions or interrupts. Memory is one flat region with a memory-mapped LED register. The Sky130 run is clean on DRC and LVS and closes timing at every corner, but about 4200 max-slew violations are still flagged at the slow corner. They don't break timing at 36 ns.
+
+<div class="fig-row">
+  <Figure src={img_timing_summary} alt={"Vivado design timing summary showing positive setup slack"} caption={"Vivado timing summary at 10 MHz"} />
+  <Figure src={img_utilization} alt={"Vivado post-implementation utilization table for the full design"} caption={"Utilization on the Zynq-7000"} />
+</div>
+
+![The riscv-5i datapath: five pipeline stages with forwarding paths and hazard logic](/synced/riscv-5i/docs-images-pipeline_complete.svg)
+
+<Video video={{"kind": "file", "src": "/video/riscv-5i-fib.mp4", "caption": "A Fibonacci program running on the PYNQ-Z2. The four LEDs show each value mod 16."}} />
+
+## Three choices worth a look
+
+- **JAL resolves in decode, not execute.** Its target is `PC + imm`, which is known in decode, so only the instruction already in fetch gets flushed. JALR cannot do this because its target depends on a register.
+- **LUI goes through the ALU.** The immediate generator emits the already shifted value and the ALU adds it to zero, so LUI needs no new logic. AUIPC works the same way with the PC on the other input.
+- **Instruction memory reads combinationally.** My first FPGA bring-up used a synchronous block RAM, and branches refused to fire on hardware while RISCOF still passed in simulation. The postmortem in the verification article walks through finding it with an ILA.
+
+The timing diagrams for every hazard case are on the [original docs site](https://cshieldsce.github.io/riscv-5i/architecture/hazards/).
