@@ -17,6 +17,12 @@ hero:
 
 import Figure from '../../components/Figure.astro';
 import img_architecture from '../../assets/projects/smallcore/architecture.png';
+import img_start_small from '../../assets/projects/smallcore/start-small.png';
+import img_three_questions from '../../assets/projects/smallcore/three-questions.png';
+import img_first_datapath from '../../assets/projects/smallcore/first-datapath.png';
+import img_control_unit from '../../assets/projects/smallcore/control-unit.png';
+import img_opcodes from '../../assets/projects/smallcore/opcodes.png';
+import img_block_diagram from '../../assets/projects/smallcore/block-diagram.png';
 
 ## The chip
 
@@ -25,6 +31,22 @@ A host writes bytes into a TX FIFO, picks one of the programs in a ROM, and the 
 The RTL is Verilog-2001. A Python model of the core is the golden reference, and cocotb benches under Verilator run the RTL in lockstep with it.
 
 <Figure src={img_architecture} alt="Block diagram of smallcore.v with host.v and rom.v feeding top.v, which holds the core and its TX and RX FIFOs, and the core driving 24 pads" caption="What's inside the chip" />
+
+## Where it started
+
+It started on paper, with one box: a host byte goes in, a program is loaded, and GPIO comes out. Then three questions, each answered with the least hardware that would do the job.
+
+<Figure src={img_start_small} alt="A box labelled tiny programmable core, with host byte in, program in and GPIO out" caption="The first box" />
+
+<Figure src={img_three_questions} alt="Three small diagrams: instruction memory, a program counter feeding instruction memory, and a host byte into a shift register out to GPIO" caption="Something to hold a program, something to say which instruction runs, and something to turn bytes into bits" />
+
+<Figure src={img_first_datapath} alt="A program counter feeding instruction memory and decode, with TX and RX FIFOs each paired with a shift register to GPIO, and the host connected to the FIFOs" caption="Those parts joined up, with a FIFO each way between the host and the pins" />
+
+<Figure src={img_control_unit} alt="A control unit box with delay, opcode, program counter, TX empty, RX full, GPIO and input shift register going in, and shift in, shift out, GPIO, push and pull coming out" caption="The control unit as first drawn" />
+
+<Figure src={img_opcodes} alt="The first opcodes: SET, SHIFT IN and OUT, PUSH and PULL, JMP, WAIT" caption="The first five opcode groups. The final instruction set has eighteen mnemonics" />
+
+<Figure src={img_block_diagram} alt="Block diagram with ROM and RAM feeding fetch, execute driving the GPIO out, a TX FIFO feeding the output shift register, GPIO in feeding the input shift register and the RX FIFO, and a host with four registers" caption="The datapath once it had a ROM and RAM, four host registers and the stall points" />
 
 ## How I worked on it
 
