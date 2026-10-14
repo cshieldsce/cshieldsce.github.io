@@ -50,7 +50,7 @@ It started on paper, with one box: a host byte goes in, a program is loaded, and
 
 ## How I worked on it
 
-Every question about the instruction set is an experiment. I write the candidate instructions, measure real programs against them, and record the outcome with a date, including the ones I rejected. The articles below are those records:
+Past I2C, every question about the instruction set was an experiment. For SWD, CAN and CRC I came up with a set of candidate instructions, had AI implement them on the golden model, and ran them against the tests and the real protocol programs I already had. Then I read the numbers and decided. Nothing reached the RTL until it was adopted, and I kept the rejected ones with a date and the reason. The articles below are those records:
 
 - REPEAT became opcode 111 after comparing ways to repeat a run of words.
 - CAN needed a run test, and the same question came up on the transmit and receive sides, so `SKIP_RUN` and `SKIP_NORUN` were adopted.
