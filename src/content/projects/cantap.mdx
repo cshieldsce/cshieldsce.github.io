@@ -43,8 +43,8 @@ cantap assert cap.jsonl --expr 'count(id=0x100) >= 500 and no_errors and bus_loa
 
 The firmware is for an STM32G474RE with three FDCAN peripherals, FreeRTOS and TinyUSB. It shows up as two USB interfaces: a standard gs_usb device that Linux handles natively, and a second one speaking a protocol I wrote, which carries hardware timestamps and all channels. The bench build is a Nucleo-G474RE with soldered transceivers.
 
-On a real bus, loopback passes on each adapter I tried: that bench build, a PCAN-USB and a CANable-style gs_usb dongle. The cross-bus tests, where two different adapters talk to each other, failed on my last run and that's still open. The firmware has only run on the Nucleo bench build, not on the Candor board.
+On a real bus, loopback passes on each adapter I tried: that bench build, a PCAN-USB and a CANable-style gs_usb dongle. The cross-bus tests, where two different adapters talk to each other, failed on my last run and that's still open. The firmware has only run on the Nucleo bench build, not on the PCB board.
 
 ## The board
 
-Candor is a single-channel isolated CAN FD adapter: an STM32G474RE, a TI ISOW1044 isolated transceiver with its own DC-DC, a USB-C connector, an ESD part on the bus side and a USB ESD part on the host side. It is two layers with 63 footprints, 415 track segments and 97 vias. The first schematic is from April 2026. Since then I swapped the common-mode choke, dropped the reset button and added a solder jumper that enables the bus termination.
+The PCB board is a single-channel isolated CAN FD adapter: an STM32G474RE, a TI ISOW1044 isolated transceiver with its own DC-DC, a USB-C connector, an ESD part on the bus side and a USB ESD part on the host side. It is two layers with 63 footprints, 415 track segments and 97 vias. The first schematic is from April 2026. Since then I swapped the common-mode choke, dropped the reset button and added a solder jumper that enables the bus termination.
