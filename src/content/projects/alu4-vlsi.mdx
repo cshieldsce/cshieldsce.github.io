@@ -1,0 +1,88 @@
+---
+title: Four-bit add/subtract unit in VLSI
+summary: A 4-bit adder/subtractor with tri-state outputs, laid out as one row of transistors in Electric VLSI and checked against all 512 input combinations in LTspice, on both the schematic and the extracted layout.
+status: simulated
+statusNote: I never fabricated it. The layout matches the schematic (LVS) and simulates correctly, but DRC still flags same-net notches where the power straps overlap.
+specs: 224 transistors, 1202 x 72 um, 3.0 ns worst case
+tags: [VLSI, layout, digital, LTspice, Electric]
+year: 2026
+hero:
+  src: ../../assets/projects/alu4-vlsi/hero.png
+  alt: Close-up of the full adder layout with orange PMOS diffusion on top, green NMOS diffusion below, red polysilicon gates and blue and purple metal routing
+---
+
+import Figure from '../../components/Figure.astro';
+import img_sch_bit0 from '../../assets/projects/alu4-vlsi/alu4_sch_bit0.png';
+import img_tri_sch from '../../assets/projects/alu4-vlsi/tri_sch.png';
+import img_tri_lay from '../../assets/projects/alu4-vlsi/tri_lay.png';
+import img_lay from '../../assets/projects/alu4-vlsi/alu4_lay.png';
+import img_slice from '../../assets/projects/alu4-vlsi/slice_lay.png';
+import img_cmp from '../../assets/projects/alu4-vlsi/sim_lay_vs_sch.png';
+import img_all from '../../assets/projects/alu4-vlsi/sim_all.png';
+import img_worst from '../../assets/projects/alu4-vlsi/sim_worst.png';
+
+## What it does
+
+Two 4-bit inputs, A and B, and one control bit, Sub:
+
+- Sub = 0 gives S = A + B
+- Sub = 1 gives S = B + ~A + 1, which is B minus A in two's complement
+
+The four result bits go out through tri-state buffers, so with En low the outputs let go and another block can drive the same bus. Cout comes out too. When subtracting, Cout = 1 means B is at least A.
+
+## Built from my own cells
+
+Everything is made from a small standard cell set I drew earlier: NOT, NAND, XOR and a full adder built from two XORs and three NANDs. The one new cell is the tri-state buffer. Every transistor is the same size, 6 by 2 lambda on the MOSIS 0.6 um process (lambda = 0.3 um).
+
+Each bit is the same three blocks in a row:
+
+- an XOR of A with Sub, which passes A through when adding and inverts it when subtracting
+- a full adder, with the carry rippling from bit to bit and Sub feeding the first carry in, which supplies the +1
+- a tri-state buffer on the sum
+
+<Figure src={img_sch_bit0} alt={"Close-up of bit 0 in the schematic showing A0 and Sub into the XOR, the XOR into the full adder, and the sum into the tri-state buffer driving S0"} caption={"Bit 0 of the schematic. The other three slices are identical, with the carry chaining left to right"} />
+
+## The tri-state buffer
+
+Two inverters make D_bar and En_bar, and those drive a four-transistor stack: two PMOS in series from vdd and two NMOS in series to ground. With En high both outer transistors are on and the stack is just an inverter of D_bar, so the output equals D. With En low both outer transistors are off and the output floats.
+
+<div class="fig-row">
+  <Figure src={img_tri_sch} alt={"Schematic of the tri-state buffer with two input inverters and a four-transistor stack"} caption={"Tri-state schematic"} />
+  <Figure src={img_tri_lay} alt={"Layout of the tri-state buffer with the stack sharing one diffusion strip on each side"} caption={"Tri-state layout, rails at the same height as the other cells"} />
+</div>
+
+## One row
+
+The whole unit is a single row, 1202 by 72 um. Every cell sits on the same vdd and ground rails, so the rails run straight through from end to end. The routing follows one rule: metal 1 runs horizontally and metal 2 runs vertically, so anything that crosses a rail does it in metal 2 and can't short to power.
+
+The inputs come in along the bottom edge, the outputs leave from the top, and the carry runs along the top of the row into the next slice. Sub and En are two long buses under the row.
+
+<Figure src={img_lay} alt={"The full layout as one long thin row of four slices"} caption={"All four bits, 4007 by 240 lambda"} />
+
+<Figure src={img_slice} alt={"Layout of one bit slice: the XOR on the left, the full adder in the middle and the tri-state buffer on the right, with routing above and below"} caption={"One slice. The XOR output crosses to the full adder in the gap, and the carry runs along the top to the next slice"} />
+
+## Checking it
+
+Electric's LVS (NCC) says the layout matches the schematic for every cell, all the way up to the full unit.
+
+For simulation I counted through every combination of A, B and Sub, 512 vectors at 20 ns each, and sampled the outputs just before each step. All 512 are right.
+
+<Figure src={img_all} alt={"LTspice waveforms of the five outputs over all 512 input combinations"} caption={"All 512 combinations"} />
+
+Then I ran the same tests on the netlist Electric pulls back out of the layout. That netlist includes the source and drain area of every transistor, which adds capacitance the schematic leaves out. It still gets 512 out of 512, and the demo vectors come out identical, but it is about twice as slow.
+
+<Figure src={img_cmp} alt={"Ten test vectors with the schematic and extracted layout outputs overlaid, the layout traces slightly later at each edge"} caption={"Schematic (solid) against extracted layout (dashed). Same answers, a little later"} />
+
+| | Schematic | Extracted layout |
+|---|---|---|
+| All 512 combinations | correct | correct |
+| Slowest settle | 1.6 ns | 3.0 ns |
+| Median settle | 0.75 ns | 1.6 ns |
+
+The slowest case is a carry rippling through all four bits, like going from 0111 to 1000.
+
+<Figure src={img_worst} alt={"Waveform of the slowest transition with a carry rippling through all four bits"} caption={"The worst case: the carry ripples through every bit before the top output settles"} />
+
+## What I'd change
+
+The cells are taller than they need to be. The space between the PMOS and NMOS rows holds about eight rows of gate wiring, and redrawing the cells with tighter wiring would cut maybe 10 to 15 percent off the height. A carry-lookahead adder would fix the ripple delay, but for four bits the ripple is already only a few nanoseconds.
