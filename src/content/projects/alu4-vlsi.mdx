@@ -8,13 +8,15 @@ tags: [VLSI, layout, digital, LTspice, Electric]
 year: 2026
 hero:
   src: ../../assets/projects/alu4-vlsi/hero.png
-  alt: Close-up of the full adder layout with orange PMOS diffusion on top, green NMOS diffusion below, red polysilicon gates and blue and purple metal routing
+  alt: Electric layout of the full adder on a black background, with green diffusion rows top and bottom, pink polysilicon gates and blue and purple metal routing
 ---
 
 import Figure from '../../components/Figure.astro';
 import img_sch_bit0 from '../../assets/projects/alu4-vlsi/alu4_sch_bit0.png';
 import img_tri_sch from '../../assets/projects/alu4-vlsi/tri_sch.png';
 import img_tri_lay from '../../assets/projects/alu4-vlsi/tri_lay.png';
+import img_fa_sch from '../../assets/projects/alu4-vlsi/fa_sch.png';
+import img_fa_lay from '../../assets/projects/alu4-vlsi/fa_lay.png';
 import img_lay from '../../assets/projects/alu4-vlsi/alu4_lay.png';
 import img_slice from '../../assets/projects/alu4-vlsi/slice_lay.png';
 import img_cmp from '../../assets/projects/alu4-vlsi/sim_lay_vs_sch.png';
@@ -39,6 +41,10 @@ Each bit is the same three blocks in a row:
 - an XOR of A with Sub, which passes A through when adding and inverts it when subtracting
 - a full adder, with the carry rippling from bit to bit and Sub feeding the first carry in, which supplies the +1
 - a tri-state buffer on the sum
+
+<Figure src={img_fa_sch} alt={"Electric schematic of the full adder built from two XOR gates and three NAND gates"} caption={"Full adder schematic: two XORs for the sum, three NANDs for the carry"} />
+
+<Figure src={img_fa_lay} alt={"Electric layout of the full adder with the two XOR cells on the outside and the three NAND cells in the middle"} caption={"Full adder layout"} />
 
 <Figure src={img_sch_bit0} alt={"Close-up of bit 0 in the schematic showing A0 and Sub into the XOR, the XOR into the full adder, and the sum into the tri-state buffer driving S0"} caption={"Bit 0 of the schematic. The other three slices are identical, with the carry chaining left to right"} />
 
