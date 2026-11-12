@@ -18,6 +18,7 @@ import img_tri_lay from '../../assets/projects/alu4-vlsi/tri_lay.png';
 import img_fa_sch from '../../assets/projects/alu4-vlsi/fa_sch.png';
 import img_fa_lay from '../../assets/projects/alu4-vlsi/fa_lay.png';
 import img_lay from '../../assets/projects/alu4-vlsi/alu4_lay.png';
+import img_3d from '../../assets/projects/alu4-vlsi/alu4_3d.png';
 import img_slice from '../../assets/projects/alu4-vlsi/slice_lay.png';
 import img_cmp from '../../assets/projects/alu4-vlsi/sim_lay_vs_sch.png';
 import img_all from '../../assets/projects/alu4-vlsi/sim_all.png';
@@ -64,6 +65,8 @@ The whole unit is a single row, 1202 by 72 um. Every cell sits on the same vdd a
 The inputs come in along the bottom edge, the outputs leave from the top, and the carry runs along the top of the row into the next slice. Sub and En are two long buses under the row.
 
 <Figure src={img_lay} alt={"The full layout as one long thin row of four slices"} caption={"All four bits, 4007 by 240 lambda"} />
+
+<Figure src={img_3d} alt={"Electric 3D view of the layout seen from a low angle, with the four slices receding into the distance and the metal layers stacked above the transistors"} caption={"The same row in Electric's 3D view"} />
 
 <Figure src={img_slice} alt={"Layout of one bit slice: the XOR on the left, the full adder in the middle and the tri-state buffer on the right, with routing above and below"} caption={"One slice. The XOR output crosses to the full adder in the gap, and the carry runs along the top to the next slice"} />
 
