@@ -12,7 +12,7 @@ hero:
 ---
 
 import Figure from '../../components/Figure.astro';
-import img_sch_bit0 from '../../assets/projects/alu4-vlsi/alu4_sch_bit0.png';
+import img_sch from '../../assets/projects/alu4-vlsi/alu4_sch.png';
 import img_tri_sch from '../../assets/projects/alu4-vlsi/tri_sch.png';
 import img_tri_lay from '../../assets/projects/alu4-vlsi/tri_lay.png';
 import img_fa_sch from '../../assets/projects/alu4-vlsi/fa_sch.png';
@@ -20,9 +20,11 @@ import img_fa_lay from '../../assets/projects/alu4-vlsi/fa_lay.png';
 import img_lay from '../../assets/projects/alu4-vlsi/el_alu4_lay.png';
 import img_3d from '../../assets/projects/alu4-vlsi/alu4_3d.png';
 import img_slice from '../../assets/projects/alu4-vlsi/slice_lay.png';
-import img_cmp from '../../assets/projects/alu4-vlsi/sim_lay_vs_sch.png';
-import img_all from '../../assets/projects/alu4-vlsi/sim_all.png';
-import img_worst from '../../assets/projects/alu4-vlsi/sim_worst.png';
+import img_demo from '../../assets/projects/alu4-vlsi/lt_demo.png';
+import img_demo_lay from '../../assets/projects/alu4-vlsi/lt_demo_lay.png';
+import img_all from '../../assets/projects/alu4-vlsi/lt_all.png';
+import img_worst from '../../assets/projects/alu4-vlsi/lt_worst.png';
+import img_worst_lay from '../../assets/projects/alu4-vlsi/lt_worst_lay.png';
 
 ## What it does
 
@@ -47,7 +49,7 @@ Each bit is the same three blocks in a row:
 
 <Figure src={img_fa_lay} alt={"Electric layout of the full adder with the two XOR cells on the outside and the three NAND cells in the middle"} caption={"Full adder layout"} />
 
-<Figure src={img_sch_bit0} alt={"Close-up of bit 0 in the schematic showing A0 and Sub into the XOR, the XOR into the full adder, and the sum into the tri-state buffer driving S0"} caption={"Bit 0 of the schematic. The other three slices are identical, with the carry chaining left to right"} />
+<Figure src={img_sch} alt={"Electric schematic of the whole unit: four slices in a row, each an XOR, a full adder and a tri-state buffer, with the carry chaining from bit 0 to bit 3"} caption={"The top-level schematic in Electric. Four identical slices, with the carry C1 to C3 chaining left to right"} />
 
 ## The tri-state buffer
 
@@ -74,13 +76,19 @@ The inputs come in along the bottom edge, the outputs leave from the top, and th
 
 Electric's LVS (NCC) says the layout matches the schematic for every cell, all the way up to the full unit.
 
-For simulation I counted through every combination of A, B and Sub, 512 vectors at 20 ns each, and sampled the outputs just before each step. All 512 are right.
+The first test bench runs nine hand-picked vectors, 40 ns each: four additions, then five subtractions, then En goes low. To make the results readable I added three display-only sources that show A, B and S as plain numbers from 0 to 15.
 
-<Figure src={img_all} alt={"LTspice waveforms of the five outputs over all 512 input combinations"} caption={"All 512 combinations"} />
+<Figure src={img_demo} alt={"LTspice plot with panes for Sub and En, A and B as numbers, S as a number, then the four output bits and Cout"} caption={"Test vectors in LTspice. Reading across: 3+5=8, 7+9=0 carry 1, 15+1=0 carry 1, 10+10=4 carry 1, then 5-3=2, 3-5=14 (minus 2), 6-6=0, 9-0=9, 2-15=3. At 360 ns En drops and the outputs float"} />
 
-Then I ran the same tests on the netlist Electric pulls back out of the layout. That netlist includes the source and drain area of every transistor, which adds capacitance the schematic leaves out. It still gets 512 out of 512, and the demo vectors come out identical, but it is about twice as slow.
+The second counts through every combination of A, B and Sub, 512 vectors at 20 ns each, and checks the outputs just before each step. All 512 are right.
 
-<Figure src={img_cmp} alt={"Ten test vectors with the schematic and extracted layout outputs overlaid, the layout traces slightly later at each edge"} caption={"Schematic (solid) against extracted layout (dashed). Same answers, a little later"} />
+<Figure src={img_all} alt={"LTspice plot over 10 microseconds with Sub, A stepping and B ramping, S as a number, and Cout"} caption={"All 512 combinations: Sub, then A (red steps) and B (cyan ramps), then S and Cout"} />
+
+## The layout, simulated
+
+Then I ran the same tests on the netlist Electric pulls back out of the layout. That netlist includes the source and drain area of every transistor, which adds capacitance the schematic leaves out. It still gets 512 out of 512 and the test vectors come out identical, but it is about twice as slow.
+
+<Figure src={img_demo_lay} alt={"LTspice plot of the same test vectors run on the extracted layout netlist, matching the schematic"} caption={"The same test vectors on the extracted layout"} />
 
 | | Schematic | Extracted layout |
 |---|---|---|
@@ -88,9 +96,11 @@ Then I ran the same tests on the netlist Electric pulls back out of the layout. 
 | Slowest settle | 1.6 ns | 3.0 ns |
 | Median settle | 0.75 ns | 1.6 ns |
 
-The slowest case is a carry rippling through all four bits, like going from 0111 to 1000.
+The slowest case is a carry rippling through all four bits: subtracting 5 while B goes from 12 to 13, so the answer goes from 0111 to 1000. B0 rises at 1 ns, S0, S1 and S2 fall one after another as the carry moves up, and S3 rises last.
 
-<Figure src={img_worst} alt={"Waveform of the slowest transition with a carry rippling through all four bits"} caption={"The worst case: the carry ripples through every bit before the top output settles"} />
+<Figure src={img_worst} alt={"LTspice plot of B0 rising at 1 ns, then S0, S1 and S2 falling in turn and S3 rising at about 2.6 ns"} caption={"Slowest transition, schematic: S3 settles about 1.6 ns after the edge"} />
+
+<Figure src={img_worst_lay} alt={"The same transition on the extracted layout, with every output edge later and S3 rising at about 4 ns"} caption={"Same transition, extracted layout: about 3 ns"} />
 
 ## What I'd change
 
